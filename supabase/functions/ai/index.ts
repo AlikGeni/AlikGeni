@@ -39,7 +39,15 @@ Deno.serve(async (req) => {
     );
 
     const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data?.error?.message ?? `Gemini request failed with status ${res.status}`);
+    }
+
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    if (!text) {
+      throw new Error(`Gemini returned an empty response: ${JSON.stringify(data).slice(0, 800)}`);
+    }
+
     return new Response(JSON.stringify({ text }), {
       headers: { ...cors, 'Content-Type': 'application/json' },
     });

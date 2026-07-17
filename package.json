@@ -16,9 +16,12 @@
     "ai:deploy": "supabase functions deploy ai"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.45.0",
+    "lucide-react": "^1.24.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "recharts": "^3.9.2"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
@@ -27,5 +30,18 @@
     "supabase": "^2.0.0",
     "typescript": "^5.5.3",
     "vite": "^5.4.8"
-  }
+  },
+  "description": "Твоя отправная точка. Здесь уже готово: страница, **вход по email**, **профиль** и **база данных**\r (пример: список записей). Дальше ты переделаешь это под свою идею с помощью **Codex**.",
+  "main": "tailwind.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlikGeni/AlikGeni.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AlikGeni/AlikGeni/issues"
+  },
+  "homepage": "https://github.com/AlikGeni/AlikGeni#readme"
 }
