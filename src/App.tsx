@@ -14,6 +14,8 @@ import {
 } from 'recharts';
 import { explainTopic, generateTest, TopicExplanationStep } from './lib/gemini';
 import { supabase } from './lib/supabase';
+import { Auth } from './components/Auth';
+import { Home } from './components/Home';
 
 interface AiTestQuestion {
   question: string;
@@ -40,7 +42,7 @@ interface AuthForm {
 }
 
 type Language = 'ru' | 'en';
-type TabType = 'generator' | 'explain' | 'stats';
+type TabType = 'generator' | 'explain' | 'stats' | 'welcome';
 type DifficultyType = 'easy' | 'medium' | 'hardcore';
 type AuthMode = 'login' | 'register';
 type ThemeMode = 'light' | 'dark';
@@ -105,6 +107,30 @@ interface Translation {
   profileGreeting: (name: string) => string;
   statsGreetingUser: (name: string) => string;
   statsGreetingGuest: string;
+  homeTitle: string;
+  homeSubtitle: string;
+  homeDescription: string;
+  homeStartButton: string;
+  homeHowItHelps: string;
+  homeCardExam: string;
+  homeCardExamText: string;
+  homeCardSimple: string;
+  homeCardSimpleText: string;
+  homeCardTime: string;
+  homeCardTimeText: string;
+  homeCardFun: string;
+  homeCardFunText: string;
+  homeHowItWorks: string;
+  homeStepEnterTopic: string;
+  homeStepEnterTopicText: string;
+  homeStepChooseFormat: string;
+  homeStepChooseFormatText: string;
+  homeStepBoost: string;
+  homeStepBoostText: string;
+  homeQuickStart: string;
+  homeButtonTestGenerator: string;
+  homeButtonTopicExplainer: string;
+  homeButtonGames: string;
 }
 
 const defaultStats: Stats = {
@@ -163,7 +189,7 @@ const translations: Record<Language, Translation> = {
     resetAvailable: '🗑️ Сбросить цикл статистики (Доступно!)',
     resetLocked: (count: number) =>
       `🔒 Сброс заблокирован (Пройди еще ${count} ${count === 1 ? 'тест' : count < 5 ? 'теста' : 'тестов'} для разблокировки)`,
-    signIn: '🔑 Войти',
+    signIn: 'Войти',
     logout: 'Выйти',
     loginTab: 'Вход',
     registerTab: 'Регистрация',
@@ -176,8 +202,32 @@ const translations: Record<Language, Translation> = {
     submitLogin: 'Войти',
     submitRegister: 'Зарегистрироваться',
     authCloseLabel: 'Закрыть окно авторизации',
+    homeTitle: 'SYNAPSE',
+    homeSubtitle: 'Учись быстрее, понимай глубже.',
+    homeDescription: 'Интеллектуальная платформа, которая за 5 секунд превращает любую сложную тему в понятные конспекты, интерактивные тесты и обучающие игры.',
+    homeStartButton: 'Начать обучение',
+    homeHowItHelps: 'Где и как помогает',
+    homeCardExam: 'Подготовка к экзаменам',
+    homeCardExamText: 'Мгновенно создает тесты по твоим материалам для эффективной самопроверки.',
+    homeCardSimple: 'Сложное — просто',
+    homeCardSimpleText: 'Объяснит любую тему (от квантовой физики до React) самым легким языком.',
+    homeCardTime: 'Экономия времени',
+    homeCardTimeText: 'Забудь про долгий поиск информации. ИИ выделяет только самое важное за секунды.',
+    homeCardFun: 'Обучение без скуки',
+    homeCardFunText: 'Закрепляй материал через микро-игры и отслеживай свой прогресс.',
+    homeHowItWorks: 'Как это работает',
+    homeStepEnterTopic: 'Введи тему',
+    homeStepEnterTopicText: 'Напиши любой предмет или вставь сложный текст для изучения.',
+    homeStepChooseFormat: 'Выбери формат',
+    homeStepChooseFormatText: 'Получи структурированное объяснение или сгенерируй тест.',
+    homeStepBoost: 'Прокачивай знания',
+    homeStepBoostText: 'Проходи задания, играй и следи за своей подробной статистикой.',
+    homeQuickStart: 'Быстрый старт',
+    homeButtonTestGenerator: 'Test Generator',
+    homeButtonTopicExplainer: 'Topic Explainer',
+    homeButtonGames: 'Games',
     profileGreeting: (name: string) => `👋 ${name}`,
-    statsGreetingUser: (name: string) => `Hello, ${name}! Your progress is being saved.`,
+    statsGreetingUser: (name: string) => `Привет, ${name}! Твой прогресс сохраняется.`,
     statsGreetingGuest: 'Привет, Гость! Войди в аккаунт, чтобы сохранять прогресс',
   },
   en: {
@@ -228,7 +278,7 @@ const translations: Record<Language, Translation> = {
     resetSuccess: 'Statistics reset successfully! Let us start a new cycle!',
     resetAvailable: '🗑️ Reset statistics cycle (Available!)',
     resetLocked: (count: number) => `🔒 Reset locked (Complete ${count} more ${count === 1 ? 'test' : 'tests'} to unlock)`,
-    signIn: '🔑 Sign In',
+    signIn: 'Sign In',
     logout: 'Logout',
     loginTab: 'Login',
     registerTab: 'Register',
@@ -241,6 +291,30 @@ const translations: Record<Language, Translation> = {
     submitLogin: 'Sign In',
     submitRegister: 'Register',
     authCloseLabel: 'Close auth modal',
+    homeTitle: 'SYNAPSE',
+    homeSubtitle: 'Learn faster, understand deeper.',
+    homeDescription: 'An AI platform that turns any complex topic into clear notes, interactive quizzes, and educational games in 5 seconds.',
+    homeStartButton: 'Start learning',
+    homeHowItHelps: 'How it helps',
+    homeCardExam: 'Exam preparation',
+    homeCardExamText: 'Instantly generates quizzes based on your materials for effective self-checking.',
+    homeCardSimple: 'Complex made simple',
+    homeCardSimpleText: 'Explains any topic (from quantum physics to React) in the easiest way possible.',
+    homeCardTime: 'Save time',
+    homeCardTimeText: 'Forget about endless searching. AI highlights only the most important parts in seconds.',
+    homeCardFun: 'Learn without boredom',
+    homeCardFunText: 'Reinforce material through micro-games and track your progress.',
+    homeHowItWorks: 'How it works',
+    homeStepEnterTopic: 'Enter a topic',
+    homeStepEnterTopicText: 'Type any subject or paste a complex text to study.',
+    homeStepChooseFormat: 'Choose a format',
+    homeStepChooseFormatText: 'Get a structured explanation or generate a quiz.',
+    homeStepBoost: 'Boost your knowledge',
+    homeStepBoostText: 'Complete tasks, play games, and track your detailed statistics.',
+    homeQuickStart: 'Quick start',
+    homeButtonTestGenerator: 'Test Generator',
+    homeButtonTopicExplainer: 'Topic Explainer',
+    homeButtonGames: 'Games',
     profileGreeting: (name: string) => `👋 ${name}`,
     statsGreetingUser: (name: string) => `Hello, ${name}! Your progress is being saved.`,
     statsGreetingGuest: 'Hello, Guest! Sign in to save progress',
@@ -366,6 +440,7 @@ function App() {
   const [explainError, setExplainError] = useState<string>('');
   const [stats, setStats] = useState<Stats>(getSavedStats);
   const [user, setUser] = useState<User | null>(getSavedUser);
+  const [isGuest, setIsGuest] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -651,6 +726,18 @@ function App() {
     }
   };
 
+  const handleGoHome = () => {
+    setActiveTab('welcome');
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleSignOut = () => {
+    setIsProfileMenuOpen(false);
+    setUser(null);
+    localStorage.removeItem('synapse_user');
+    window.alert('Вы успешно вышли из системы');
+  };
+
   const openAuthModal = () => {
     setAuthMode('login');
     setIsAuthModalOpen(true);
@@ -690,19 +777,56 @@ function App() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-      },
-    });
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      console.error('Error logging in with Google:', error?.message ?? error);
+    }
   };
+
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        window.alert(error.message);
+        return;
+      }
+
+      if (data?.user) {
+        const nextUser = createUserFromSupabaseUser(data.user);
+        localStorage.setItem('synapse_user', JSON.stringify(nextUser));
+        setUser(nextUser);
+        setIsAuthModalOpen(false);
+      }
+    } catch (err) {
+      window.alert('Login failed. Please try again.');
+    }
+  };
+
+  const handleContinueAsGuest = () => {
+    setIsGuest(true);
+    setActiveTab('generator');
+  };
+
+  if (!user && !isGuest) {
+    return <Auth onLogin={handleLogin} onGuestLogin={handleContinueAsGuest} onGoogleLogin={handleGoogleLogin} />;
+  }
 
   return (
     <div className="synapse-container bg-white text-[#0F172A] dark:bg-[#0A0A0A] dark:text-[#E5E5E5]">
       <header className="mobile-header flex md:hidden bg-white border-b border-slate-200 dark:bg-[#0A0A0A] dark:border-b dark:border-[#1F1F1F]">
-        <div className="mobile-logo">SYNAPSE</div>
+        <button type="button" className="mobile-logo bg-transparent border-none p-0 cursor-pointer" onClick={handleGoHome} aria-label="Go home">
+          <span className="text-3xl font-bold text-emerald-400 tracking-wide cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 inline-block select-none">SYNAPSE</span>
+        </button>
         <button
           className="mobile-menu-button"
           type="button"
@@ -737,8 +861,10 @@ function App() {
         </nav>
       </div>
 
-      <header className="desktop-navbar hidden md:flex bg-white border-b border-slate-200 dark:bg-[#0A0A0A] dark:border-b dark:border-[#1F1F1F]">
-        <div className="logo">SYNAPSE</div>
+      <header className="desktop-navbar hidden md:flex items-center bg-white border-b border-slate-200 dark:bg-[#0A0A0A] dark:border-b dark:border-[#1F1F1F]">
+        <button type="button" className="logo bg-transparent border-none p-0 cursor-pointer" onClick={handleGoHome} aria-label="Go home">
+          <span className="text-3xl font-bold text-emerald-400 tracking-wide cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 inline-block select-none">SYNAPSE</span>
+        </button>
         <nav className="desktop-nav-list">
           <button
             className={`menu-item text-slate-500 hover:text-[#0F172A] dark:text-gray-400 dark:hover:text-white ${activeTab === 'generator' ? 'active' : ''}`}
@@ -790,7 +916,41 @@ function App() {
           </button>
 
           {user === null ? (
-            <button className={`navbar-auth-btn ${isAuthModalOpen ? 'active' : ''}`} onClick={openAuthModal}>
+            <button
+              className="inline-flex items-center justify-center border-none outline-none"
+              type="button"
+              onClick={openAuthModal}
+              role="button"
+              tabIndex={0}
+              style={{
+                height: '32px',
+                padding: '0 16px',
+                borderRadius: '9999px',
+                backgroundColor: '#10b981',
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: 700,
+                lineHeight: 1,
+                border: 'none',
+                outline: 'none',
+                cursor: 'pointer',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                appearance: 'none',
+                WebkitAppearance: 'none',
+                margin: 0,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  openAuthModal();
+                }
+              }}
+            >
               {t.signIn}
             </button>
           ) : (
@@ -798,20 +958,20 @@ function App() {
               {isProfileMenuOpen && (
                 <div className="profile-menu-dropdown navbar-profile-dropdown">
                   <button className="profile-menu-item" type="button">
-                    My Profile
+                    {language === 'ru' ? 'Мой профиль' : 'My Profile'}
                   </button>
                   <button className="profile-menu-item" type="button">
-                    Appearance
+                    {language === 'ru' ? 'Внешний вид' : 'Appearance'}
                   </button>
                   <button className="profile-menu-item" type="button">
-                    Tutorial
+                    {language === 'ru' ? 'Обучение' : 'Tutorial'}
                   </button>
                   <button className="profile-menu-item" type="button">
-                    Settings
+                    {language === 'ru' ? 'Настройки' : 'Settings'}
                   </button>
                   <hr className="profile-menu-divider" />
-                  <button className="profile-menu-sign-out" type="button" onClick={() => setIsProfileMenuOpen(false)}>
-                    Sign Out
+                  <button className="profile-menu-sign-out" type="button" onClick={handleSignOut}>
+                    {language === 'ru' ? 'Выйти' : 'Sign Out'}
                   </button>
                 </div>
               )}
@@ -835,6 +995,8 @@ function App() {
       </header>
 
       <main className="main-content">
+        {activeTab === 'welcome' && <Home setActiveTab={setActiveTab} t={t} />}
+
         {activeTab === 'generator' && (
           <div className="tab-content">
             <h1>{t.generatorTitle}</h1>
@@ -1078,42 +1240,54 @@ function App() {
                 </>
               )}
             </p>
-            <div className="stats-grid">
-              <div className="stat-box bg-white border border-slate-200 shadow-sm dark:bg-[#121212] dark:border dark:border-[#262626]">
-                <div>{t.testsCompleted}</div>
-                <div className="stat-value">{stats.testsCompleted}</div>
+            {user ? (
+              <>
+                <div className="stats-grid">
+                  <div className="stat-box bg-white border border-slate-200 shadow-sm dark:bg-[#121212] dark:border dark:border-[#262626]">
+                    <div>{t.testsCompleted}</div>
+                    <div className="stat-value">{stats.testsCompleted}</div>
+                  </div>
+                  <div className="stat-box bg-white border border-slate-200 shadow-sm dark:bg-[#121212] dark:border dark:border-[#262626]">
+                    <div>{t.averageScore}</div>
+                    <div className="stat-value">{stats.averageScore}%</div>
+                  </div>
+                  <div className="stat-box bg-white border border-slate-200 shadow-sm dark:bg-[#121212] dark:border dark:border-[#262626]">
+                    <div>{t.yourStatus}</div>
+                    <div className="stat-value empire-status">{stats.testsCompleted >= 3 ? t.advancedStatus : t.beginnerStatus}</div>
+                  </div>
+                </div>
+                <button
+                  className="btn-primary"
+                  disabled={!canResetStats}
+                  onClick={handleResetStats}
+                  style={
+                    canResetStats
+                      ? {
+                          marginTop: '24px',
+                          background: 'var(--glacier)',
+                          boxShadow: '0 18px 40px color-mix(in srgb, var(--glacier) 24%, transparent)',
+                        }
+                      : {
+                          marginTop: '24px',
+                          background: 'var(--border-color)',
+                          boxShadow: 'none',
+                          cursor: 'not-allowed',
+                          opacity: 0.55,
+                        }
+                  }
+                >
+                  {canResetStats ? t.resetAvailable : t.resetLocked(testsUntilReset)}
+                </button>
+              </>
+            ) : (
+              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-12 flex flex-col items-center justify-center text-center mt-8 w-full max-w-2xl mx-auto">
+                <p className="text-center text-zinc-400 text-lg mt-8">
+                  {language === 'ru'
+                    ? 'Здесь пока пусто. Войдите в аккаунт, чтобы сохранять свои достижения и отслеживать прогресс.'
+                    : "It's empty here for now. Sign in to save your achievements and track your progress."}
+                </p>
               </div>
-              <div className="stat-box bg-white border border-slate-200 shadow-sm dark:bg-[#121212] dark:border dark:border-[#262626]">
-                <div>{t.averageScore}</div>
-                <div className="stat-value">{stats.averageScore}%</div>
-              </div>
-              <div className="stat-box bg-white border border-slate-200 shadow-sm dark:bg-[#121212] dark:border dark:border-[#262626]">
-                <div>{t.yourStatus}</div>
-                <div className="stat-value empire-status">{stats.testsCompleted >= 3 ? t.advancedStatus : t.beginnerStatus}</div>
-              </div>
-            </div>
-            <button
-              className="btn-primary"
-              disabled={!canResetStats}
-              onClick={handleResetStats}
-              style={
-                canResetStats
-                  ? {
-                      marginTop: '24px',
-                      background: 'var(--glacier)',
-                      boxShadow: '0 18px 40px color-mix(in srgb, var(--glacier) 24%, transparent)',
-                    }
-                  : {
-                      marginTop: '24px',
-                      background: 'var(--border-color)',
-                      boxShadow: 'none',
-                      cursor: 'not-allowed',
-                      opacity: 0.55,
-                    }
-              }
-            >
-              {canResetStats ? t.resetAvailable : t.resetLocked(testsUntilReset)}
-            </button>
+            )}
           </div>
         )}
       </main>

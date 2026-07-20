@@ -73,6 +73,22 @@ button {
   border: none;
 }
 
+button[class~='bg-emerald-500'] {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button[class~='bg-emerald-500']:hover {
+  background-color: #059669 !important;
+}
+
 .synapse-container {
   display: flex;
   flex-direction: column;
@@ -94,11 +110,37 @@ button {
 
 .logo {
   flex: 0 0 auto;
-  color: var(--glacier) !important;
-  font-size: 32px !important;
-  font-weight: 850 !important;
-  letter-spacing: 1.5px !important;
+  padding: 0;
+  border: none;
+  background: transparent !important;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
   text-transform: uppercase;
+}
+
+.logo span,
+.mobile-logo span {
+  display: inline-block;
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #34d399 !important;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  transform-origin: center;
+}
+
+.logo span:hover,
+.mobile-logo span:hover {
+  transform: scale(1.05);
+}
+
+.logo span:active,
+.mobile-logo span:active {
+  transform: scale(0.95);
 }
 
 .desktop-nav-list {
@@ -1005,10 +1047,13 @@ input::placeholder {
 }
 
 .mobile-logo {
-  color: var(--glacier);
-  font-size: 24px;
-  font-weight: 850;
-  letter-spacing: 1.5px;
+  padding: 0;
+  border: none;
+  background: transparent !important;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
 }
 
 .mobile-menu-button,
