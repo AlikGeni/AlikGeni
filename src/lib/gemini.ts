@@ -209,19 +209,44 @@ const requestGroqJson = async (system: string, prompt: string): Promise<unknown>
   }
 };
 
-export const generateTest = async (topic: string, difficulty: string): Promise<GeneratedTestQuestion[]> => {
+export const generateTest = async (topic: string, difficulty: string, language: 'ru' | 'en' = 'en'): Promise<GeneratedTestQuestion[]> => {
+  const normalizedTopic = topic.trim();
+  const normalizedDifficulty = difficulty.trim();
+  const normalizedLanguage = language === 'ru' ? 'ru' : 'en';
+
   const questions = await requestGroqJson(
     systemPrompt,
-    `Create a quiz about "${topic}" with difficulty "${difficulty}". Number of questions: 5.`,
+    `Generate 5 high-quality, unique quiz questions strictly about the topic "${normalizedTopic}".
+
+Difficulty level: "${normalizedDifficulty}".
+Language: "${normalizedLanguage}".
+
+Requirements:
+- The questions must be tailored to the exact topic and difficulty.
+- Do not generate generic, reusable, or template-like questions.
+- For easy difficulty, ask basic definitions, recognition, and simple facts.
+- For medium difficulty, ask applied understanding, comparisons, and short reasoning.
+- For hardcore difficulty, ask advanced edge cases, deeper reasoning, multi-step thinking, and subtle distinctions.
+- Make all 5 questions different from each other.
+- Keep every question directly relevant to the topic.
+- Write the question text, all answer options, and the correctAnswer strictly in the selected language.
+- If language is "ru", output only Russian.
+- If language is "en", output only English.
+- Return only a JSON array of exactly 5 objects that matches the required schema.`,
   );
 
   return normalizeQuestions(questions);
 };
 
-export const explainTopic = async (topic: string, currentStep?: TopicExplanationStep): Promise<TopicExplanationStep[]> => {
+export const explainTopic = async (
+  topic: string,
+  language: 'ru' | 'en' = 'en',
+  currentStep?: TopicExplanationStep,
+): Promise<TopicExplanationStep[]> => {
+  const normalizedLanguage = language === 'ru' ? 'ru' : 'en';
   const prompt = currentStep
-    ? `Topic: "${topic}". Current step title: "${currentStep.title}". Current step text: "${currentStep.content}".`
-    : `Explain this topic in 4-5 logical steps: "${topic}".`;
+    ? `Topic: "${topic}". Language: "${normalizedLanguage}". Current step title: "${currentStep.title}". Current step text: "${currentStep.content}". Rewrite this step and its explanation strictly in the selected language.`
+    : `Explain this topic in 4-5 logical steps: "${topic}". Language: "${normalizedLanguage}". Write the entire explanation strictly in the selected language from the very first step.`;
 
   const steps = await requestGroqJson(currentStep ? simpleStepSystemPrompt : topicExplainerSystemPrompt, prompt);
 

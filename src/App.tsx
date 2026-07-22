@@ -16,6 +16,7 @@ import { explainTopic, generateTest, TopicExplanationStep } from './lib/gemini';
 import { supabase } from './lib/supabase';
 import { Auth } from './components/Auth';
 import { Home } from './components/Home';
+import { Games } from './components/Games';
 
 interface AiTestQuestion {
   question: string;
@@ -42,7 +43,7 @@ interface AuthForm {
 }
 
 type Language = 'ru' | 'en';
-type TabType = 'generator' | 'explain' | 'stats' | 'welcome';
+type TabType = 'generator' | 'explain' | 'stats' | 'games' | 'welcome';
 type DifficultyType = 'easy' | 'medium' | 'hardcore';
 type AuthMode = 'login' | 'register';
 type ThemeMode = 'light' | 'dark';
@@ -54,6 +55,24 @@ interface Translation {
   navExplain: string;
   navStats: string;
   navGames: string;
+  gamesTitle: string;
+  gamesSubtitle: string;
+  gamesHint: string;
+  gamesCardTimeAttackTitle: string;
+  gamesCardTimeAttackDescription: string;
+  gamesCardPlayButton: string;
+  gamesBackToHub: string;
+  timeAttackTopicLabel: string;
+  timeAttackTopicPlaceholder: string;
+  timeAttackTimerLabel: string;
+  timeAttackStartButton: string;
+  timeAttackScoreLabel: string;
+  timeAttackStreakLabel: string;
+  timeAttackFinalScore: string;
+  timeAttackBestStreak: string;
+  timeAttackLoadingText: string;
+  timeAttackPlayAgain: string;
+  timeAttackBackToLobby: string;
   generatorTitle: string;
   generatorSubtitle: string;
   topicLabel: string;
@@ -226,6 +245,24 @@ const translations: Record<Language, Translation> = {
     homeButtonTestGenerator: 'Test Generator',
     homeButtonTopicExplainer: 'Topic Explainer',
     homeButtonGames: 'Games',
+    gamesTitle: 'Игровая зона',
+    gamesSubtitle: 'Здесь появится витрина мини-игр и обучающих активностей.',
+    gamesHint: 'Пока что это пустой экран — скоро он будет заполняться играми и заданиями.',
+    gamesCardTimeAttackTitle: 'Блиц-выживание',
+    gamesCardTimeAttackDescription: 'Отвечай на быстрые вопросы на время, зарабатывай очки и комбо.',
+    gamesCardPlayButton: 'Играть',
+    gamesBackToHub: 'Назад к списку',
+    timeAttackTopicLabel: 'Тема',
+    timeAttackTopicPlaceholder: 'Введите тему для вопросов...',
+    timeAttackTimerLabel: 'Таймер',
+    timeAttackStartButton: 'НАЧАТЬ ИГРУ',
+    timeAttackScoreLabel: 'Очки',
+    timeAttackStreakLabel: 'Комбо',
+    timeAttackFinalScore: 'Итоговый счёт',
+    timeAttackBestStreak: 'Лучший стрик',
+    timeAttackLoadingText: 'Подготовка раунда...',
+    timeAttackPlayAgain: 'Играть снова',
+    timeAttackBackToLobby: 'Назад в лобби',
     profileGreeting: (name: string) => `👋 ${name}`,
     statsGreetingUser: (name: string) => `Привет, ${name}! Твой прогресс сохраняется.`,
     statsGreetingGuest: 'Привет, Гость! Войди в аккаунт, чтобы сохранять прогресс',
@@ -315,6 +352,24 @@ const translations: Record<Language, Translation> = {
     homeButtonTestGenerator: 'Test Generator',
     homeButtonTopicExplainer: 'Topic Explainer',
     homeButtonGames: 'Games',
+    gamesTitle: 'Gaming Hub',
+    gamesSubtitle: 'Choose a mini-game, sharpen your speed and accuracy.',
+    gamesHint: 'This is the lobby for now — the game stage opens after selection.',
+    gamesCardTimeAttackTitle: 'Time Attack',
+    gamesCardTimeAttackDescription: 'Answer fast questions against the clock, earn points and combos.',
+    gamesCardPlayButton: 'Play',
+    gamesBackToHub: 'Back to Hub',
+    timeAttackTopicLabel: 'Topic',
+    timeAttackTopicPlaceholder: 'Enter a topic to generate questions...',
+    timeAttackTimerLabel: 'Timer',
+    timeAttackStartButton: 'START GAME',
+    timeAttackScoreLabel: 'Score',
+    timeAttackStreakLabel: 'Streak 🔥',
+    timeAttackFinalScore: 'Final Score',
+    timeAttackBestStreak: 'Best Streak',
+    timeAttackLoadingText: 'Preparing your round...',
+    timeAttackPlayAgain: 'Play Again',
+    timeAttackBackToLobby: 'Back to Lobby',
     profileGreeting: (name: string) => `👋 ${name}`,
     statsGreetingUser: (name: string) => `Hello, ${name}! Your progress is being saved.`,
     statsGreetingGuest: 'Hello, Guest! Sign in to save progress',
@@ -424,7 +479,7 @@ const buildVisualChartData = (step: TopicExplanationStep) =>
 function App() {
   const [language, setLanguage] = useState<Language | null>(getSavedLanguage);
   const [themeMode, setThemeMode] = useState<ThemeMode>(getSavedTheme);
-  const [activeTab, setActiveTab] = useState<TabType>('generator');
+  const [activeTab, setActiveTab] = useState<TabType>('welcome');
   const [topic, setTopic] = useState<string>('');
   const [difficulty, setDifficulty] = useState<DifficultyType>('medium');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -578,7 +633,7 @@ function App() {
     setAiError('');
 
     try {
-      const normalizedQuestions = await generateTest(normalizedTopic, difficulty);
+      const normalizedQuestions = await generateTest(normalizedTopic, difficulty, language);
       setTestQuestions(normalizedQuestions);
       setActiveQuestionIndex(0);
       setUserAnswers([]);
@@ -642,7 +697,7 @@ function App() {
     setExplainError('');
 
     try {
-      const steps = await explainTopic(normalizedTopic);
+      const steps = await explainTopic(normalizedTopic, language);
       setExplanationSteps(steps.slice(0, 5));
       setActiveExplanationStepIndex(0);
     } catch (error) {
@@ -669,7 +724,7 @@ function App() {
     setExplainError('');
 
     try {
-      const [simpleStep] = await explainTopic(explainTopicInput.trim(), currentExplanationStep);
+      const [simpleStep] = await explainTopic(explainTopicInput.trim(), language, currentExplanationStep);
 
       if (!simpleStep) {
         throw new Error('AI did not return a simplified explanation.');
@@ -768,13 +823,14 @@ function App() {
       return;
     }
 
-    if (data.user) {
-      const nextUser = createUserFromSupabaseUser(data.user);
-      localStorage.setItem('synapse_user', JSON.stringify(nextUser));
-      setUser(nextUser);
-      setIsAuthModalOpen(false);
-      setAuthForm({ username: '', email: '', password: '' });
-    }
+      if (data.user) {
+        const nextUser = createUserFromSupabaseUser(data.user);
+        localStorage.setItem('synapse_user', JSON.stringify(nextUser));
+        setUser(nextUser);
+        setIsAuthModalOpen(false);
+        setActiveTab('welcome');
+        setAuthForm({ username: '', email: '', password: '' });
+      }
   };
 
   const handleGoogleLogin = async () => {
@@ -806,6 +862,7 @@ function App() {
         localStorage.setItem('synapse_user', JSON.stringify(nextUser));
         setUser(nextUser);
         setIsAuthModalOpen(false);
+        setActiveTab('welcome');
       }
     } catch (err) {
       window.alert('Login failed. Please try again.');
@@ -855,7 +912,7 @@ function App() {
           <button className={`mobile-nav-item ${activeTab === 'stats' ? 'active' : ''}`} type="button" onClick={() => handleMobileTabClick('stats')}>
             {t.navStats}
           </button>
-          <button className="mobile-nav-item mobile-nav-item-locked" type="button" onClick={() => setIsMobileMenuOpen(false)}>
+          <button className={`mobile-nav-item ${activeTab === 'games' ? 'active' : ''}`} type="button" onClick={() => handleMobileTabClick('games')}>
             {t.navGames}
           </button>
         </nav>
@@ -881,7 +938,10 @@ function App() {
           <button className={`menu-item text-slate-500 hover:text-[#0F172A] dark:text-gray-400 dark:hover:text-white ${activeTab === 'stats' ? 'active' : ''}`} onClick={() => setActiveTab('stats')}>
             {desktopNavLabels.stats}
           </button>
-          <button className="menu-item locked text-slate-500 dark:text-gray-400" disabled>
+          <button
+            className={`menu-item text-slate-500 hover:text-[#0F172A] dark:text-gray-400 dark:hover:text-white ${activeTab === 'games' ? 'active' : ''}`}
+            onClick={() => setActiveTab('games')}
+          >
             {desktopNavLabels.games}
           </button>
         </nav>
@@ -996,6 +1056,7 @@ function App() {
 
       <main className="main-content">
         {activeTab === 'welcome' && <Home setActiveTab={setActiveTab} t={t} />}
+        {activeTab === 'games' && <Games t={t} language={language} />}
 
         {activeTab === 'generator' && (
           <div className="tab-content">
@@ -1195,9 +1256,14 @@ function App() {
                             {language === 'ru' ? 'Понял, дальше' : 'Got it, next'}
                           </button>
                         )}
-                        <button className="socratic-secondary-btn" type="button" onClick={handleSimplifyExplanationStep}>
-                          {language === 'ru' ? 'Проще, пожалуйста' : 'Simpler, please'}
-                        </button>
+                        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                          <button className="socratic-secondary-btn" type="button" onClick={handleSimplifyExplanationStep}>
+                            {language === 'ru' ? 'Проще, пожалуйста' : 'Simpler, please'}
+                          </button>
+                          <button className="socratic-secondary-btn" type="button" onClick={handleGoHome}>
+                            {language === 'ru' ? 'Назад в лобби' : 'Back to lobby'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )
@@ -1358,7 +1424,7 @@ function App() {
               <span>{language === 'ru' ? 'или' : 'or'}</span>
             </div>
 
-            <button className="google-login-btn" type="button" onClick={handleGoogleSignIn}>
+            <button className="google-login-btn" type="button" onClick={handleGoogleLogin}>
               {authMode === 'login'
                 ? language === 'ru'
                   ? 'Войти через Google'
