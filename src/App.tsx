@@ -913,9 +913,14 @@ function App() {
             {t.navStats}
           </button>
           <button className={`mobile-nav-item ${activeTab === 'games' ? 'active' : ''}`} type="button" onClick={() => handleMobileTabClick('games')}>
-            {t.navGames}
+            {language === 'ru' ? '🎮 ИГРЫ (GAMES)' : '🎮 GAMES'}
           </button>
         </nav>
+        <div className="mobile-nav-language">
+          <button className="lang-toggle-btn" type="button" onClick={handleToggleLanguage}>
+            🌐 {language === 'ru' ? 'English (EN)' : 'Русский (RU)'}
+          </button>
+        </div>
       </div>
 
       <header className="desktop-navbar hidden md:flex items-center bg-white border-b border-slate-200 dark:bg-[#0A0A0A] dark:border-b dark:border-[#1F1F1F]">
